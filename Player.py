@@ -1,25 +1,14 @@
 import pygame
 
 
-# def opposite(a):
-#     if a == 'a':
-#         return 'd'
-#     elif a == 'd':
-#         return 'a'
-#     elif a == 'w':
-#         return 's'
-#     elif a == 's':
-#         return 'w'
-
-
 class Player(pygame.sprite.Sprite):
     image = pygame.image.load('player/left_player_1.png')
-    key_a_pressed, key_d_pressed, key_w_pressed, key_s_pressed = False, False, False, False
 
     def __init__(self, group):
         super().__init__(group)
 
-        self.speed = 3
+        self.base_speed = 3
+        self.speed = self.base_speed
         self.what_anim = 0
 
         self.last_key = ''
@@ -55,6 +44,7 @@ class Player(pygame.sprite.Sprite):
         ]
         self.side = self.left_pose
         self.frame_counter = 0
+        self.mask = pygame.mask.from_surface(self.image)
 
     def get_map_coords(self):
         return self.x_map, self.y_map
@@ -63,30 +53,31 @@ class Player(pygame.sprite.Sprite):
         self.image = self.side[self.what_anim]
         self.rect.topleft = (self.x_player, self.y_player)
 
-        if pygame.sprite.spritecollideany(self, wall_sprites):
-            self.speed = 0
-
-
+        start_x, start_y = self.x_map, self.y_map
         keys = pygame.key.get_pressed()
         if keys[pygame.K_a]:
             self.x_map += self.speed
             self.side = self.left_pose
             self.last_key = 'a'
-            # self.opposite_key = opposite(self.last_key)
         if keys[pygame.K_d]:
             self.x_map -= self.speed
             self.side = self.right_pose
             self.last_key = 'd'
-            # self.opposite_key = opposite(self.last_key)
         if keys[pygame.K_w]:
             self.y_map += self.speed
             self.last_key = 'w'
-            # self.opposite_key = opposite(self.last_key)
         if keys[pygame.K_s]:
             self.y_map -= self.speed
             self.last_key = 's'
-            # self.opposite_key = opposite(self.last_key)
 
+        global wall_sprites
+        update_map(player, wall_sprites)
+
+        for wall in wall_sprites:
+            if pygame.sprite.collide_mask(self, wall):
+                self.x_map, self.y_map = start_x, start_y
+
+        self.speed = self.base_speed
         self.frame_counter += 1  # Увеличение счетчика кадров
         if self.frame_counter >= 10:  # Смена кадра анимации
             self.what_anim = (self.what_anim + 1) % len(self.side)
@@ -98,7 +89,32 @@ class Wall(pygame.sprite.Sprite):
         super().__init__(group)
         self.image = pygame.image.load('walls/wall.png').convert_alpha()
         self.rect = self.image.get_rect(topleft=(x, y))
-        # self.mask = pygame.mask.from_surface(self.image)
+        self.mask = pygame.mask.from_surface(self.image)
+
+
+def update_map(player, wall_sprites):
+    wall_sprites.empty()  # Очищаем группу стен перед отрисовкой
+
+    map = get_map(1)
+    x, y = player.get_map_coords()
+    len_y, len_x = len(map), len(map[0])
+
+    for y_map in range(len_y):
+        for x_map in range(len_x):
+            if -32 < y + y_map * 30 < height + 32 and -32 < x + x_map * 30 < width + 32:
+                if map[y_map][x_map] == 1:
+                    Wall(wall_sprites, x + x_map * 30, y + y_map * 30)
+
+
+def draw_map(screen, wall_sprites):
+    wall_sprites.draw(screen)
+
+
+
+
+
+
+
 
 
 import math
@@ -130,22 +146,12 @@ if __name__ == '__main__':
         screen.fill((131, 241, 236))
         all_sprites.draw(screen)
 
-        wall_sprites = pygame.sprite.Group()
+        update_map(player, wall_sprites)
+        draw_map(screen, wall_sprites)
 
-        map = get_map(1)
-        x, y = player.get_map_coords()
-        len_y, len_x = len(map), len(map[0])
-        wall = pygame.image.load('walls/wall.png')
-        for y_map in range(len_y):
-            for x_map in range(len_x):
-                if -32 < y + y_map * 30 < height + 32 and -32 < x + x_map * 30 < width + 32:
-                    if map[y_map][x_map] == 1:
-                        wall = Wall(wall_sprites, x + x_map * 30, y + y_map * 30)
-
-        # wall_sprites.update()
         wall_sprites.draw(screen)
 
         pygame.display.flip()
-        clock.tick(60)  # Ограничение FPS
+        clock.tick(120)
 
-    pygame.quit()  # Завершение работы Pygame```
+    pygame.quit()
