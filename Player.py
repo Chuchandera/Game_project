@@ -1,47 +1,32 @@
 import pygame
+import math
+from maps import *
 
 
 class Player(pygame.sprite.Sprite):
-    image = pygame.image.load('player/left_player_1.png')
 
     def __init__(self, group):
         super().__init__(group)
+        self.image = pygame.image.load('player/left_player_1.png').convert_alpha()
+        self.rect = self.image.get_rect()
 
-        self.base_speed = 3
+        self.base_speed = 10
         self.speed = self.base_speed
         self.what_anim = 0
 
         self.last_key = ''
         self.opposite_key = ''
 
-        self.image = Player.image
         self.rect = self.image.get_rect()
         self.x_player = width // 2 - self.image.get_width() // 2
         self.y_player = height // 2 - self.image.get_height() // 2
 
         self.x_map = -96
         self.y_map = -96
-        self.left_pose = [
-            pygame.image.load('player/left_player_1.png').convert_alpha(),
-            pygame.image.load('player/left_player_2.png').convert_alpha(),
-            pygame.image.load('player/left_player_3.png').convert_alpha(),
-            pygame.image.load('player/left_player_4.png').convert_alpha(),
-            pygame.image.load('player/left_player_5.png').convert_alpha(),
-            pygame.image.load('player/left_player_6.png').convert_alpha(),
-            pygame.image.load('player/left_player_7.png').convert_alpha(),
-            pygame.image.load('player/left_player_8.png').convert_alpha()
-        ]
 
-        self.right_pose = [
-            pygame.image.load('player/right_player_1.png').convert_alpha(),
-            pygame.image.load('player/right_player_2.png').convert_alpha(),
-            pygame.image.load('player/right_player_3.png').convert_alpha(),
-            pygame.image.load('player/right_player_4.png').convert_alpha(),
-            pygame.image.load('player/right_player_5.png').convert_alpha(),
-            pygame.image.load('player/right_player_6.png').convert_alpha(),
-            pygame.image.load('player/right_player_7.png').convert_alpha(),
-            pygame.image.load('player/right_player_8.png').convert_alpha()
-        ]
+        self.left_pose = [pygame.image.load(f'player/left_player_{i}.png').convert_alpha() for i in range(1, 9)]
+        self.right_pose = [pygame.image.load(f'player/right_player_{i}.png').convert_alpha() for i in range(1, 9)]
+
         self.side = self.left_pose
         self.frame_counter = 0
         self.mask = pygame.mask.from_surface(self.image)
@@ -71,7 +56,7 @@ class Player(pygame.sprite.Sprite):
             self.last_key = 's'
 
         global wall_sprites
-        update_map(player, wall_sprites)
+        update_map_forplay(player, wall_sprites)
 
         for wall in wall_sprites:
             if pygame.sprite.collide_mask(self, wall):
@@ -84,6 +69,52 @@ class Player(pygame.sprite.Sprite):
             self.frame_counter = 0
 
 
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self, start_pos, target_pos):
+        super().__init__()
+        self.image = pygame.image.load('player/shot.png').convert_alpha()
+        self.rect = self.image.get_rect(center=start_pos)
+        self.speed = 8
+        self.direction = self.calculate_direction(start_pos, target_pos)
+
+    def calculate_direction(self, start_pos, target_pos):
+        self.x_con, self.y_con = player.get_map_coords()
+        dx = target_pos[0] - start_pos[0]
+        dy = target_pos[1] - start_pos[1]
+        distance = math.hypot(dx, dy)
+        if distance == 0:
+            return (0, 0)
+        return (dx / distance, dy / distance)
+
+    def update(self):
+        # x, y = player.get_map_coords()
+        # self.x_con, self.y_con = x - self.x_con, y - self.y_con
+
+        self.rect.x += self.direction[0] * self.speed
+        self.rect.y += self.direction[1] * self.speed
+        if (self.rect.x < 0 or self.rect.x > width or
+                self.rect.y < 0 or self.rect.y > height):
+            self.kill()
+
+        for wall in wall_sprites:
+            if pygame.sprite.collide_mask(self, wall):
+                self.kill()
+
+    @staticmethod
+    def handle_input(event, bullets, bullet_counter, frame_counter, reload_frames, max_bullet):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1:
+                if bullet_counter < max_bullet:
+                    mouse_pos = pygame.mouse.get_pos()
+                    start_pos = (width // 2, height // 2)
+                    bullet = Bullet(start_pos, mouse_pos)
+                    bullets.add(bullet)
+                    return bullet_counter + 1, frame_counter
+        if frame_counter >= reload_frames:
+            return max(0, bullet_counter - 1), 0
+        return bullet_counter, frame_counter + 1
+
+
 class Wall(pygame.sprite.Sprite):
     def __init__(self, group, x, y):
         super().__init__(group)
@@ -92,8 +123,16 @@ class Wall(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
 
 
-def update_map(player, wall_sprites):
-    wall_sprites.empty()  # Очищаем группу стен перед отрисовкой
+class Floor(pygame.sprite.Sprite):
+    def __init__(self, group, x, y):
+        super().__init__(group)
+        self.image = pygame.image.load('walls/floor.png').convert_alpha()
+        self.rect = self.image.get_rect(topleft=(x, y))
+        self.mask = pygame.mask.from_surface(self.image)
+
+
+def update_map_forplay(player, wall_sprites):
+    wall_sprites.empty()
 
     map = get_map(1)
     x, y = player.get_map_coords()
@@ -101,24 +140,34 @@ def update_map(player, wall_sprites):
 
     for y_map in range(len_y):
         for x_map in range(len_x):
-            if -32 < y + y_map * 30 < height + 32 and -32 < x + x_map * 30 < width + 32:
-                if map[y_map][x_map] == 1:
-                    Wall(wall_sprites, x + x_map * 30, y + y_map * 30)
+            if -32 < y + y_map * 32 < height + 32 and -32 < x + x_map * 32 < width + 32:
+                block = map[y_map][x_map]
+                if block == 1:
+                    Wall(wall_sprites, x + x_map * 32, y + y_map * 32)
 
 
-def draw_map(screen, wall_sprites):
+def update_map(player, wall_sprites, background_sprites):
+    wall_sprites.empty()
+    background_sprites.empty()  # Очищаем группу стен перед отрисовкой
+
+    map = get_map(1)
+    x, y = player.get_map_coords()
+    len_y, len_x = len(map), len(map[0])
+
+    for y_map in range(len_y):
+        for x_map in range(len_x):
+            if -32 < y + y_map * 32 < height + 32 and -32 < x + x_map * 32 < width + 32:
+                block = map[y_map][x_map]
+                if block == 1:
+                    Wall(wall_sprites, x + x_map * 32, y + y_map * 32)
+                if block == 0:
+                    Floor(background_sprites, x + x_map * 32, y + y_map * 32)
+
+
+def draw_map(screen, wall_sprites, background_sprites):
     wall_sprites.draw(screen)
+    background_sprites.draw(screen)
 
-
-
-
-
-
-
-
-
-import math
-from maps import *
 
 if __name__ == '__main__':
     pygame.init()  # Инициализация Pygame
@@ -126,10 +175,16 @@ if __name__ == '__main__':
     size = width, height = 800, 640  # Размеры окна
     screen = pygame.display.set_mode(size)  # Создание окна
 
-    all_sprites = pygame.sprite.Group()
-    wall_sprites = pygame.sprite.Group()
+    bullets = pygame.sprite.Group()
 
-    player = Player(all_sprites)
+    all_sprites = pygame.sprite.Group()
+    player_sprite = pygame.sprite.Group()
+    wall_sprites = pygame.sprite.Group()
+    background_sprites = pygame.sprite.Group()
+
+    player = Player(player_sprite)
+
+    bullet_counter, frame_counter, reload_frames, max_bullet = 0, 0, 15, 5
 
     clock = pygame.time.Clock()  # Объект для управления временем
     running = True  # Флаг для основного цикла
@@ -139,19 +194,24 @@ if __name__ == '__main__':
             if event.type == pygame.QUIT:
                 running = False
             all_sprites.update(event)
-
-        # Движение персонажа
+            bullet_counter, frame_counter = Bullet.handle_input(event, bullets, bullet_counter, frame_counter,
+                                                                reload_frames, max_bullet)
 
         all_sprites.update()
+        player_sprite.update()
+
         screen.fill((131, 241, 236))
         all_sprites.draw(screen)
 
-        update_map(player, wall_sprites)
-        draw_map(screen, wall_sprites)
+        update_map(player, wall_sprites, background_sprites)
+        draw_map(screen, wall_sprites, background_sprites)
 
-        wall_sprites.draw(screen)
+        bullets.update()
+        bullets.draw(screen)
+
+        player_sprite.draw(screen)
 
         pygame.display.flip()
-        clock.tick(120)
+        clock.tick(30)
 
     pygame.quit()
