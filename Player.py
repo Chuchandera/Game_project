@@ -212,6 +212,6 @@ if __name__ == '__main__':
         player_sprite.draw(screen)
 
         pygame.display.flip()
-        clock.tick(30)
+        clock.tick(60)
 
     pygame.quit()
