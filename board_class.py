@@ -5,14 +5,16 @@ from maps import *
 
 
 class Board:
-    def __init__(self, map_number, screen, left, top):
+    def __init__(self, map_number, screen, player_coordinates):
 
         self.board_screen = screen
 
-        self.board = get_map(map_number)
+        self.board, x, y = get_map(map_number)
         self.board_len_y, self.board_len_x = len(self.board), len(self.board[0])
 
-        self.left, self.top = left, top
+        self.left = player_coordinates[0] + x
+        self.top = player_coordinates[1] + y
+
         self.cell_size = 32
         self.wall_sprites = pygame.sprite.Group()
         self.board_sprites = pygame.sprite.Group()

@@ -27,6 +27,9 @@ class Player(pygame.sprite.Sprite):
         self.frame_counter = 0
         self.mask = pygame.mask.from_surface(self.image)
 
+    def get_player_coord(self):
+        return self.x_player, self.y_player
+
     def update(self, *args, **kwargs):
         if not game_paused:
             self.image = self.side[self.what_anim]
@@ -159,7 +162,7 @@ def Start(difficulty, mus_volume, game_vol, index):
     player_sprite = pygame.sprite.Group()
     global player
     player = Player(player_sprite)
-    board = Bullet.board = Board(1, screen, -100, -100)
+    board = Bullet.board = Board(1, screen, player.get_player_coord())
     Bullet.board.create_board()
     bullet_counter, frame_counter, reload_frames, max_bullet, reloading = 0, 0, 8, 45, False
     clock = pygame.time.Clock()
