@@ -1,6 +1,4 @@
 import pygame
-import math
-import sys
 from maps import *
 
 
