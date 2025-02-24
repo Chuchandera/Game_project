@@ -8,7 +8,7 @@ class Board:
     def __init__(self, map_number, screen, player_coordinates):
 
         self.board_screen = screen
-
+        self.zombie_spawn_points = []
         self.board, x, y = get_map(map_number)
         self.board_len_y, self.board_len_x = len(self.board), len(self.board[0])
 
@@ -19,7 +19,6 @@ class Board:
         self.wall_sprites = pygame.sprite.Group()
         self.board_sprites = pygame.sprite.Group()
 
-    # настройка внешнего вида
     def set_view(self, left, top):
         self.left = left
         self.top = top
@@ -34,12 +33,14 @@ class Board:
                 block = self.board[y_map][x_map]
                 if block == 1:
                     Wall(self.wall_sprites, x + x_map * 32, y + y_map * 32)
-                elif block == 0:
+                elif block in [0, 2]:
                     Floor(self.board_sprites, x + x_map * 32, y + y_map * 32)
+                    if block == 2:
+                        self.zombie_spawn_points.append((x + x_map * 32, y + y_map * 32))
+
 
     def update_board(self, delta_x, delta_y):
         self.set_view(self.left + delta_x, self.top + delta_y)
-        # print(self.left, self.top)
         for cube in self.wall_sprites:
             cube.change_coords(delta_x, delta_y)
         for cube in self.board_sprites:
