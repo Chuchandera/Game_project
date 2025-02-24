@@ -12,7 +12,8 @@ BLACK = (0, 0, 0)
 GRAY = (128, 128, 128)
 LIGHT_BLUE = (173, 216, 230)
 LIGHT_GREEN = (144, 238, 144)
-BACKGROUND_IMAGES = ['menubacks/backmenu1.png', 'menubacks/backmenu2.png', 'menubacks/backmenu3.png', 'menubacks/backmenu4.png', 'menubacks/backmenu5.png', 'menubacks/backmenu6.png']
+BACKGROUND_IMAGES = ['menubacks/backmenu1.png', 'menubacks/backmenu2.png', 'menubacks/backmenu3.png',
+                     'menubacks/backmenu4.png', 'menubacks/backmenu5.png', 'menubacks/backmenu6.png']
 MUSIC_FILES = ['music_data/Pantera - This Love (8 Bit).mp3',
                'music_data/Pantera - Floods (8-Bit Version).mp3',
                'music_data/Iron_Man_2022_8_Bit_Tribute_to_Black_Sabbath_8_Bit_Universe.mp3',
@@ -65,6 +66,7 @@ def draw_text(screen, text, font, color, x, y, align="center"):
         text_rect.midright = (x, y)
     screen.blit(text_surface, text_rect)
 
+
 def load_scores():
     try:
         with open(SCORES_FILE, 'r') as f:
@@ -77,6 +79,7 @@ def load_scores():
         print("Ошибка при чтении файла score.json, использованы значения по умолчанию.")
         return 0, 0, 0
 
+
 def game(level):
     pygame.mixer.music.stop()
     from Player import Start
@@ -84,13 +87,18 @@ def game(level):
     pygame.quit()
     sys.exit()
 
+
 def show_level_selection():
     global show_level_selection_flag
     show_level_selection_flag = True
-    level1_button = Button(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 100, 200, 50, "Уровень 1", WHITE, LIGHT_BLUE, game, 1)
-    level2_button = Button(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2, 200, 50, "Уровень 2", WHITE, LIGHT_BLUE, game, 2)
-    level3_button = Button(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 100, 200, 50, "Уровень 3", WHITE, LIGHT_BLUE, game, 3)
-    back_button = Button(50, 50, 100, 40, "Назад", WHITE, LIGHT_BLUE, lambda: setattr(show_level_selection, 'running', False))
+    level1_button = Button(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 100, 200, 50, "Уровень 1", WHITE, LIGHT_BLUE,
+                           game, 1)
+    level2_button = Button(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2, 200, 50, "Уровень 2", WHITE, LIGHT_BLUE, game,
+                           2)
+    level3_button = Button(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 100, 200, 50, "Уровень 3", WHITE, LIGHT_BLUE,
+                           game, 3)
+    back_button = Button(50, 50, 100, 40, "Назад", WHITE, LIGHT_BLUE,
+                         lambda: setattr(show_level_selection, 'running', False))
 
     show_level_selection.running = True
     score_1, score_2, score_3 = load_scores()
@@ -113,19 +121,24 @@ def show_level_selection():
         level3_button.draw(screen)
 
         font = pygame.font.Font(None, 36)
-        draw_text(screen, f"Ваши очки: {score_1}", font, WHITE, level1_button.rect.right + 150, level1_button.rect.centery, align="left")
-        draw_text(screen, f"Ваши очки: {score_2}", font, WHITE, level2_button.rect.right + 150, level2_button.rect.centery, align="left")
-        draw_text(screen, f"Ваши очки: {score_3}", font, WHITE, level3_button.rect.right + 150, level3_button.rect.centery, align="left")
+        draw_text(screen, f"Ваши очки: {score_1}", font, WHITE, level1_button.rect.right + 150,
+                  level1_button.rect.centery, align="left")
+        draw_text(screen, f"Ваши очки: {score_2}", font, WHITE, level2_button.rect.right + 150,
+                  level2_button.rect.centery, align="left")
+        draw_text(screen, f"Ваши очки: {score_3}", font, WHITE, level3_button.rect.right + 150,
+                  level3_button.rect.centery, align="left")
         back_button.draw(screen)
 
         pygame.display.flip()
+
 
 def options():
     global music_volume, game_volume, difficulty, show_save_message, save_message_start_time, bg_x, bg_direction
     slider_width = 200
     music_slider_x = SCREEN_WIDTH // 2 - slider_width // 2
     game_slider_x = SCREEN_WIDTH // 2 - slider_width // 2
-    back_button = Button(50, 50, 100, 40, "Назад", WHITE, LIGHT_BLUE, lambda: setattr(options, 'running', False)) #Кнопка назад теперь белая
+    back_button = Button(50, 50, 100, 40, "Назад", WHITE, LIGHT_BLUE,
+                         lambda: setattr(options, 'running', False))  # Кнопка назад теперь белая
     difficulties = ["Легко", "Нормально", "Сложно"]
 
     def change_difficulty():
@@ -146,9 +159,12 @@ def options():
             json.dump(settings, f)
         show_save_message = True
         save_message_start_time = pygame.time.get_ticks()
-    difficulty_button = Button(SCREEN_WIDTH // 2 - 110, SCREEN_HEIGHT // 3 + 100, 220, 40, f"Сложность: {difficulty}", WHITE, LIGHT_BLUE, change_difficulty)
+
+    difficulty_button = Button(SCREEN_WIDTH // 2 - 110, SCREEN_HEIGHT // 3 + 100, 220, 40, f"Сложность: {difficulty}",
+                               WHITE, LIGHT_BLUE, change_difficulty)
     difficulty_button.font = pygame.font.Font(None, 28)
-    save_button = Button(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 3 + 200, 200, 40, "Сохранить", WHITE, LIGHT_BLUE, save_settings)
+    save_button = Button(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 3 + 200, 200, 40, "Сохранить", WHITE, LIGHT_BLUE,
+                         save_settings)
     font = pygame.font.Font(None, 36)
     options.running = True
     bg_speed = 0.05
@@ -162,12 +178,14 @@ def options():
             save_button.handle_event(event)
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
-                    if music_slider_x <= event.pos[0] <= music_slider_x + slider_width and SCREEN_HEIGHT // 3 - 10 <= event.pos[1] <= SCREEN_HEIGHT // 3 + 10:
+                    if music_slider_x <= event.pos[0] <= music_slider_x + slider_width and SCREEN_HEIGHT // 3 - 10 <= \
+                            event.pos[1] <= SCREEN_HEIGHT // 3 + 10:
                         music_volume = (event.pos[0] - music_slider_x) / slider_width
                         music_volume = max(0, min(music_volume, 1))
                         pygame.mixer.music.set_volume(music_volume)
 
-                    if game_slider_x <= event.pos[0] <= game_slider_x + slider_width and SCREEN_HEIGHT // 3 - 10 + 50 <= event.pos[1] <= SCREEN_HEIGHT // 3 + 10 + 50:
+                    if game_slider_x <= event.pos[0] <= game_slider_x + slider_width and SCREEN_HEIGHT // 3 - 10 + 50 <= \
+                            event.pos[1] <= SCREEN_HEIGHT // 3 + 10 + 50:
                         game_volume = (event.pos[0] - game_slider_x) / slider_width
                         game_volume = max(0, min(game_volume, 1))
             difficulty_button.handle_event(event)
@@ -179,11 +197,15 @@ def options():
         screen.blit(background_image, (bg_x, 0))
         draw_text(screen, "Настройки", pygame.font.Font(None, 60), WHITE, SCREEN_WIDTH // 2, 100)
         pygame.draw.rect(screen, GRAY, (music_slider_x, SCREEN_HEIGHT // 3 - 10, slider_width, 20))
-        pygame.draw.rect(screen, LIGHT_BLUE, (music_slider_x, SCREEN_HEIGHT // 3 - 10, int(music_volume * slider_width), 20))
-        draw_text(screen, f"Громкость музыки: {int(music_volume * 100)}%", pygame.font.Font(None, 24), WHITE, music_slider_x - 10, SCREEN_HEIGHT // 3, align="right")
+        pygame.draw.rect(screen, LIGHT_BLUE,
+                         (music_slider_x, SCREEN_HEIGHT // 3 - 10, int(music_volume * slider_width), 20))
+        draw_text(screen, f"Громкость музыки: {int(music_volume * 100)}%", pygame.font.Font(None, 24), WHITE,
+                  music_slider_x - 10, SCREEN_HEIGHT // 3, align="right")
         pygame.draw.rect(screen, GRAY, (game_slider_x, SCREEN_HEIGHT // 3 - 10 + 50, slider_width, 20))
-        pygame.draw.rect(screen, LIGHT_GREEN, (game_slider_x, SCREEN_HEIGHT // 3 - 10 + 50, int(game_volume * slider_width), 20))
-        draw_text(screen, f"Громкость игры: {int(game_volume * 100)}%", pygame.font.Font(None, 24), WHITE, game_slider_x - 10, SCREEN_HEIGHT // 3 + 50, align="right")
+        pygame.draw.rect(screen, LIGHT_GREEN,
+                         (game_slider_x, SCREEN_HEIGHT // 3 - 10 + 50, int(game_volume * slider_width), 20))
+        draw_text(screen, f"Громкость игры: {int(game_volume * 100)}%", pygame.font.Font(None, 24), WHITE,
+                  game_slider_x - 10, SCREEN_HEIGHT // 3 + 50, align="right")
 
         back_button.draw(screen)
         difficulty_button.draw(screen)
@@ -216,9 +238,12 @@ def main_menu(itg):
 
     load_and_play_music()
 
-    play_button = Button(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 50, 200, 50, "Играть", WHITE, LIGHT_BLUE, show_level_selection)
-    options_button = Button(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 50, 200, 50, "Настройки", WHITE, LIGHT_BLUE, options)
-    exit_button = Button(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 150, 200, 50, "Выйти", WHITE, LIGHT_BLUE, lambda: pygame.quit() or sys.exit())
+    play_button = Button(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 50, 200, 50, "Играть", WHITE, LIGHT_BLUE,
+                         show_level_selection)
+    options_button = Button(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 50, 200, 50, "Настройки", WHITE, LIGHT_BLUE,
+                            options)
+    exit_button = Button(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 150, 200, 50, "Выйти", WHITE, LIGHT_BLUE,
+                         lambda: pygame.quit() or sys.exit())
 
     running = True
     bg_speed = 0.05
@@ -251,6 +276,7 @@ def main_menu(itg):
             load_and_play_music()
 
         pygame.display.flip()
+
 
 show_level_selection_flag = False
 show_save_message = False

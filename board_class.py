@@ -36,7 +36,6 @@ class Board:
                     if block == 2:
                         self.zombie_spawn_points.append((x + x_map * 32, y + y_map * 32))
 
-
     def update_board(self, delta_x, delta_y):
         self.set_view(self.left + delta_x, self.top + delta_y)
         for cube in self.wall_sprites:

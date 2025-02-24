@@ -3,6 +3,7 @@ import math
 from board_class import *
 import json
 
+
 class Player(pygame.sprite.Sprite):
     def __init__(self, group):
         super().__init__(group)
@@ -76,18 +77,20 @@ class Player(pygame.sprite.Sprite):
             if collision_y:
                 board.update_board(0, -temp_delta_y)
                 temp_delta_y = 0
-            if self.is_moving and steps_sound and not steps_channel.get_busy(): 
+            if self.is_moving and steps_sound and not steps_channel.get_busy():
                 steps_sound.play()
-            elif not self.is_moving and steps_sound: 
+            elif not self.is_moving and steps_sound:
                 steps_sound.stop()
             self.speed = self.base_speed
             self.frame_counter += 1
             if self.frame_counter >= 10:
                 self.what_anim = (self.what_anim + 1) % len(self.side)
                 self.frame_counter = 0
+
     @property
     def center(self):
         return (self.x_player + self.rect.width // 2, self.y_player + self.rect.height // 2)
+
 
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, start_pos, target_pos):
@@ -98,7 +101,7 @@ class Bullet(pygame.sprite.Sprite):
         self.direction = self.calculate_direction(start_pos, target_pos)
 
     def calculate_direction(self, start_pos, target_pos):
-        self.x_con, self.y_con = board.get_map_coords() 
+        self.x_con, self.y_con = board.get_map_coords()
         dx = target_pos[0] - start_pos[0]
         dy = target_pos[1] - start_pos[1]
         distance = math.hypot(dx, dy)
@@ -114,7 +117,7 @@ class Bullet(pygame.sprite.Sprite):
                 self.rect.x += delta_x
             if not collision_y:
                 self.rect.y += delta_y
-            if (self.rect.x < 0 or self.rect.x > width or 
+            if (self.rect.x < 0 or self.rect.x > width or
                     self.rect.y < 0 or self.rect.y > height):
                 self.kill()
                 return
@@ -127,17 +130,18 @@ class Bullet(pygame.sprite.Sprite):
     def handle_input(event, bullets, bullet_counter, frame_counter, reload_frames, max_bullet, reloading):
         if not game_paused and not dead:
             if event.type == pygame.MOUSEBUTTONDOWN and not reloading:
-                    if bullet_counter < max_bullet:
-                        mouse_pos = pygame.mouse.get_pos()
-                        start_pos = (width // 2, height // 2)
-                        bullet = Bullet(start_pos, mouse_pos)
-                        bullets.add(bullet)
-                        shoot_sound.play()
-                        return bullet_counter + 1, frame_counter, reloading 
+                if bullet_counter < max_bullet:
+                    mouse_pos = pygame.mouse.get_pos()
+                    start_pos = (width // 2, height // 2)
+                    bullet = Bullet(start_pos, mouse_pos)
+                    bullets.add(bullet)
+                    shoot_sound.play()
+                    return bullet_counter + 1, frame_counter, reloading
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_r:
                 return bullet_counter, frame_counter, True
         return bullet_counter, frame_counter, reloading
+
 
 class Zombie(pygame.sprite.Sprite):
     def __init__(self, start_pos, player, board):
@@ -171,7 +175,7 @@ class Zombie(pygame.sprite.Sprite):
             if not collision_y:
                 self.rect.y += delta_y
             distance_to_player = math.hypot(self.player.center[0] - self.rect.centerx,
-                                             self.player.center[1] - self.rect.centery)
+                                            self.player.center[1] - self.rect.centery)
             if distance_to_player <= self.detection_range and not self.is_path_blocked():
                 self.chase()
             else:
@@ -219,7 +223,8 @@ class Zombie(pygame.sprite.Sprite):
 
     def get_pos(self):
         return self.x, self.y
-    
+
+
 def save_scores():
     try:
         x1, x2, x3 = load_scores()
@@ -233,14 +238,15 @@ def save_scores():
             if player.score > x3:
                 x3 = player.score
         settings = {
-                "1": x1,
-                "2": x2,
-                "3": x3
-            }
+            "1": x1,
+            "2": x2,
+            "3": x3
+        }
         with open('jsons/score.json', "w") as f:
             json.dump(settings, f)
     except Exception:
         print('Ошибка при загрузки в score.json файл')
+
 
 def load_scores():
     try:
@@ -252,7 +258,8 @@ def load_scores():
             return score_1, score_2, score_3
     except Exception as e:
         print("Ошибка при чтении файла score.json, использованы значения по умолчанию.")
-    
+
+
 def Start(lvl, difficulty, mus_volume, game_vol, index):
     pygame.init()
     global music_volume, game_volume, diff, width, steps_channel, height, board, shoot_sound, reload_sound, steps_sound, current_music_index, game_paused, screen, font, level, zombie_agr_sound, player_death_sound, time
@@ -296,7 +303,7 @@ def Start(lvl, difficulty, mus_volume, game_vol, index):
     player = Player(player_sprite)
     board = Bullet.board = Board(level, screen, player.get_player_coord())
     if diff == 'Легко':
-        max_bullet= 35
+        max_bullet = 35
         deltak = 0.75
     if diff == 'Нормально':
         max_bullet = 25
@@ -316,6 +323,7 @@ def Start(lvl, difficulty, mus_volume, game_vol, index):
         pygame.mixer.music.load(MUSIC_FILES[current_music_index])
         pygame.mixer.music.set_volume(music_volume)
         pygame.mixer.music.play()
+
     global zombie_group
     global dead
     dead = False
@@ -348,8 +356,9 @@ def Start(lvl, difficulty, mus_volume, game_vol, index):
                 if event.key == pygame.K_LSHIFT:
                     player.base_speed -= 2
                     player.speed -= 2
-            bullet_counter, frame_counter, reloading = Bullet.handle_input(event, bullets, bullet_counter, frame_counter,
-                                                                            reload_frames, max_bullet, reloading)
+            bullet_counter, frame_counter, reloading = Bullet.handle_input(event, bullets, bullet_counter,
+                                                                           frame_counter,
+                                                                           reload_frames, max_bullet, reloading)
         if not game_paused and not dead and not is_win:
             player_sprite.update()
             screen.fill((131, 241, 236))
@@ -391,8 +400,10 @@ def Start(lvl, difficulty, mus_volume, game_vol, index):
             if len(zombie_group) == 0:
                 is_win = True
         elif game_paused:
-            text_surface = font.render("Пауза (Нажмите Esc для продолжения или L, чтобы вернуться в меню)", True, (255, 255, 255))
-            txt = font.render("Управление: ЛКМ - атака, R - перезарядка, WASD - управление, Shift - Бег",  True, (255, 255, 255))
+            text_surface = font.render("Пауза (Нажмите Esc для продолжения или L, чтобы вернуться в меню)", True,
+                                       (255, 255, 255))
+            txt = font.render("Управление: ЛКМ - атака, R - перезарядка, WASD - управление, Shift - Бег", True,
+                              (255, 255, 255))
             txt_rect = txt.get_rect(center=(width // 2, height // 2 + 100))
             text_rect = text_surface.get_rect(center=(width // 2, height // 2))
             screen.blit(text_surface, text_rect)
@@ -406,7 +417,8 @@ def Start(lvl, difficulty, mus_volume, game_vol, index):
                 deltaz = 1
             else:
                 deltaz = 0.75
-            text_surface = font.render("Вы победили! Ваши очки записаны. Для возвращения в меню нажмите L)", True, (255, 255, 255))
+            text_surface = font.render("Вы победили! Ваши очки записаны. Для возвращения в меню нажмите L)", True,
+                                       (255, 255, 255))
             text_rect = text_surface.get_rect(center=(width // 2, height // 2))
             screen.blit(text_surface, text_rect)
             if is_fr:
